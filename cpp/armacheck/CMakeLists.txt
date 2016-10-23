@@ -14,3 +14,6 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 
 add_executable(example example.cpp)
 target_link_libraries(example ${ARMADILLO_LIBRARIES})
+
+add_executable(example1 example1.cpp)
+target_link_libraries(example1 ${ARMADILLO_LIBRARIES})
