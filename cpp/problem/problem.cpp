@@ -110,7 +110,7 @@ class Problem
     SolverPtr _solver;
 
 public:
-    Problem(int data) : _data(data), _solver(new ASolver)
+    Problem(int data, Solver* solver = new ASolver) : _data(data), _solver(solver)
     {
         std::cout << "Problem built with data " << _data << std::endl;
     }
