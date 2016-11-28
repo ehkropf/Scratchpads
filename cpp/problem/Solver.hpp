@@ -19,6 +19,6 @@ public:
     virtual SolutionUPtr solve(const Problem&, Solution&) = 0;
 };
 
-typedef std::unique_ptr<Solver> SolverPtr;
+typedef std::unique_ptr<Solver> SolverUPtr;
 
 #endif // SOLVER_HPP

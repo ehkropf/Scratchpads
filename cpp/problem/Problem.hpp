@@ -10,7 +10,7 @@
 class Problem
 {
     int _data;
-    SolverPtr _solver;
+    SolverUPtr _solver;
 
 public:
     Problem(int data, Solver* solver = new ASolver) : _data(data), _solver(solver)
