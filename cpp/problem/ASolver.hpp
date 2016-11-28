@@ -20,7 +20,6 @@ public:
     }
     ~ASolver() { std::cout << "ASolver " << this << " destroyed" << std::endl; }
 
-    virtual Solver& newCopy() { return *(new ASolver); }
     virtual SolutionUPtr solve(const Problem&);
     virtual SolutionUPtr solve(const Problem&, Solution&);
 };

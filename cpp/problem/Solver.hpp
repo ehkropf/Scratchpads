@@ -14,7 +14,6 @@ class Solver
 public:
     virtual ~Solver() = default;
 
-    virtual Solver& newCopy() = 0;
     virtual SolutionUPtr solve(const Problem&) = 0;
     virtual SolutionUPtr solve(const Problem&, Solution&) = 0;
 };
