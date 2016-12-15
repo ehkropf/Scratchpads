@@ -39,7 +39,10 @@ class User
     std::unique_ptr<Base> _thing;
 
 public:
+    User() {}
     User(Base* thing) : _thing(thing) {}
+    // User(std::unique_ptr<Base> uptr) : _thing(std::move(uptr)) {}
+    User(std::unique_ptr<Base>&& uptr) : _thing(std::move(uptr)) {}
 
     friend std::ostream& operator<<(std::ostream& os, const User& user)
     {
@@ -51,10 +54,25 @@ public:
 ////////////////////////////////////////////////////////////////////////
 int main()
 {
-    Base* b = new Derived;
-    User u(b);
+    {
+        Base* b = new Derived;
+        User u(b);
 
-    std::cout << u << std::endl;
+        std::cout << u << std::endl;
+    }
+
+    std::cout << std::endl;
+
+    {
+        // User u(new Derived);
+
+        // std::unique_ptr<Base> b(new Derived);
+        // User u(std::move(b));
+
+        User u(std::unique_ptr<Base>(new Derived));
+
+        std::cout << u << std::endl;
+    }
 
     return 0;
 };
