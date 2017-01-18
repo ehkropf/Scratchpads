@@ -17,3 +17,6 @@ target_link_libraries(example ${ARMADILLO_LIBRARIES})
 
 add_executable(example1 example1.cpp)
 target_link_libraries(example1 ${ARMADILLO_LIBRARIES})
+
+add_executable(order order.cpp)
+target_link_libraries(order ${ARMADILLO_LIBRARIES})
