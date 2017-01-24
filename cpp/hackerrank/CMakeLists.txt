@@ -7,7 +7,7 @@ set(CMAKE_CXX_FLAGS "-Wall -std=c++14")
 ####################
 # Set this.
 #
-set(EXNAME day1)
+set(EXNAME coins2)
 
 ###########################################################################
 # Things to make.

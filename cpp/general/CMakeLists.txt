@@ -9,6 +9,8 @@ set(CMAKE_CXX_FLAGS "-Wall -std=c++14")
 ###########################################################################
 add_executable(uptr uptr.cpp)
 add_executable(shdat shdat.cpp)
+add_executable(cont containers.cpp)
+add_executable(cin cin.cpp)
 
 ###########################################################################
 add_test(NAME uptr COMMAND uptr)
