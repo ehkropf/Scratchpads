@@ -7,7 +7,7 @@ set(CMAKE_CXX_FLAGS "-Wall -std=c++14")
 ####################
 # Set this.
 #
-set(EXNAME coins2)
+set(EXNAME pickup)
 
 ###########################################################################
 # Things to make.
