@@ -1,3 +1,5 @@
+#!/opt/local/bin/python
+
 import os
 import sudoku as su
 

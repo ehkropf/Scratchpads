@@ -1,3 +1,5 @@
+#!/opt/local/bin/python
+
 from random import randint
 
 class Entry:
@@ -85,3 +87,9 @@ class Solution:
                     and (s.row == test.row or s.column == test.column or s.region == test.region):
                 return True
         return False
+
+################################################################################
+if __name__ == "__main__":
+    sol = Solution()
+    print("Solution:\n")
+    print(sol)

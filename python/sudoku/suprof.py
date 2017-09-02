@@ -1,3 +1,5 @@
+#!/opt/local/bin/python
+
 import cProfile
 import pstats
 import sudoku as su
