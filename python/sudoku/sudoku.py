@@ -21,9 +21,11 @@ class Entry:
 class Solution:
     """Sudoku solution."""
 
-    def __init__(self):
+    def __init__(self, observer=None):
         """Create soluiton with backtracking algorithm."""
         self.entries = []
+        self._observer = observer
+
         available = [[i+1 for i in range(9)] for _ in range(81)]
         c = 0
 
@@ -37,12 +39,18 @@ class Solution:
                     self.entries.append(test)
                     c += 1
                 else:
+                    self._callObserver(c, test)
                     continue
             else:
                 # Backtrack
                 available[c] = [i+1 for i in range(9)]
                 c -= 1
                 del self.entries[c]
+            self._callObserver(c)
+
+    def _callObserver(self, c, test=[]):
+        if self._observer:
+            self._observer(c, self.entries, test)
 
     def __str__(self):
         """Convert to grid as string."""

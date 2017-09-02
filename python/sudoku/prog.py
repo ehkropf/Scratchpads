@@ -1,6 +1,7 @@
 #!/opt/local/bin/python
 
-import os
+from sys import stdout
+from time import sleep
 import sudoku as su
 
 def rowcol(pos):
@@ -16,52 +17,130 @@ def separatorRow():
     return '-------+-------+-------'
 
 #===============================================================================
-class Movement:
-    """Base class for movement functions."""
-    def __init__(self, n):
-        self.distance = n
+CSI = '\033['
 
-    def __str__(self):
-        return self.descr.format(self.distance)
+class Placer:
+    """Curser placement and printing thingy.
 
-    def reverse(self):
-        return self._reverse(self.distance)
+       Uses ANSI cursor codes to move around.
+    """
 
-class moveUp(Movement):
-    """ansi move up"""
-    descr = '\033[{0}A'
+    def __init__(self):
+        self._relative_row = 0
 
-    def __init__(self, n):
-        Movement.__init__(self, n)
-        self._reverse = moveDown
+    @staticmethod
+    def print(str):
+        """No newline print."""
+        print(str, end='')
 
-class moveDown(Movement):
-    """ansi move down"""
-    descr = '\033[{0}B'
+    def _csiPrint(self, code):
+        """Prefix code with CSI and print."""
+        self.print(CSI + code)
 
-    def __init__(self, n):
-        Movement.__init__(self, n)
-        self._reverse = moveUp
+    def _nCodePrint(self, n, code):
+        """Print ANSI movement code with argument n.
 
-class moveRight(Movement):
-    """ansi move right"""
-    descr = '\033[{0}C'
+           It is assumed the code format is ESC[nX where X is the code.
+        """
+        self._csiPrint(str(n) + code)
 
-    def __init__(self, n):
-        Movement.__init__(self, n)
-        self._reverse = moveLeft
+    # Postion reporting
+    def curRelLine(self):
+        """Returns current relative line number."""
+        return self._relative_row
 
-class moveLeft(Movement):
-    """ansi move left"""
-    descr = '\033[{0}D'
+    # Movement
+    def BOL(self):
+        """Goto beginning of line."""
+        self._csiPrint('G')
 
-    def __init__(self, n):
-        Movement.__init__(self, n)
-        self._reverse = moveRight
+    def nUp(self, n):
+        """Move to beginning of line n lines up."""
+        self._nCodePrint(n, 'F')
+        self._relative_row += n
+
+    def nDown(self, n):
+        """Move to beginning of line n lines down."""
+        self._nCodePrint(n, 'E')
+        self._relative_row -= n
+
+    def nRight(self, n):
+        """Move right n cells."""
+        self._nCodePrint(n, 'C')
+
+    def nLeft(self, n):
+        """Move left n cells."""
+        self._nCodePrint(n, 'D')
+
+    def nColumn(self, n):
+        """Move to column n."""
+        self._nCodePrint(n, 'G')
+
+#===============================================================================
+def gridRowCol(entry):
+    """Return cursor relative row and column given entry.
+
+       Assume entry is in range [1,81].
+       Bottom row of grid is 1, top row is 17.
+    """
+
+    row = 2*((entry - 1)//9)
+
+    column = (entry - 1)%9
+    column = 2*(column + 1) + 2*(column//3)
+
+    return 17 - row, column
+
+class SolutionObserver:
+    """Observer for solution entries."""
+
+    def __init__(self):
+        self._last = 0
+        self._pos = Placer()
+        self._pos.nUp(17)
+
+    def _rowPosition(self, row):
+        """Make sure we're on the right row."""
+        s = self._pos.curRelLine() - row
+        if s > 0:
+            self._pos.nDown(s)
+        elif s < 0:
+            self._pos.nUp(-s)
+
+    def _position(self, c):
+        """Go to required grid position."""
+        row, col = gridRowCol(c)
+        self._rowPosition(row)
+        self._pos.nColumn(col)
+
+    def observer(self, c, entries, test):
+        if len(entries) < 1:
+            return
+
+        # If test is not empty, then c+1 is current entry being tested.
+        # If nothing in test, then print entry. Note test is empty on a backtrack.
+
+        if test:
+            self._position(c+1)
+            self._pos.print(test.value)
+        else:
+            if c < self._last:
+                l = self._last
+                while l > c:
+                    self._position(l+1)
+                    self._pos.print(' ')
+                    l -= 1
+
+            self._position(c)
+            self._pos.print(entries[c-1].value)
+
+            self._last = c
+
+        stdout.flush()
+        sleep(0.005)
 
 #===============================================================================
 if __name__ == "__main__":
-    sol= su.Solution()
 
     for r in range(3):
         for _ in range(5):
@@ -69,25 +148,5 @@ if __name__ == "__main__":
         if r < 2:
             print(separatorRow())
 
-    moved = []
-    moved.append(moveUp(17))
-    print(moved[-1], end='')
-    for c in range(9):
-        if c > 0 and (c % 3) == 0:
-            # Jump vertsep.
-            moved.append(moveRight(2))
-            print(moved[-1], end='')
-        moved.append(moveRight(1))
-        print(str(moved[-1]) + str(sol.entries[c].value), end='')
-        moved.append(moveRight(1))
-
-    moved.append(moveLeft(22))
-    print(moved[-1])
-    moved.append(moveDown(1))
-    print(str(moved[-1]) + 'L', end='')
-    moved.append(moveRight(1))
-
-    while len(moved) > 0:
-        mv = moved.pop().reverse()
-        print(mv, end='')
-    print('Done.')
+    sol = su.Solution(SolutionObserver().observer)
+    print('')
