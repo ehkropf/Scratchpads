@@ -68,20 +68,25 @@ class OPdic:
         if len(lead) > 1:
             lead.pop()
 
-fh = open(sys.argv[1], 'r')
+def default():
+    fh = open(sys.argv[1], 'r')
 
-for line in fh:
-    line = line.rstrip('\n')
-    opdic = OPdic(line[10:]).opdic
-    if 'reply_to' in opdic:
-        mkind = 'reply_to'
-    else:
-        mkind = 'message_info'
-    if 'private' in opdic[mkind]:
-        pstr = '|' + 'private=' + opdic[mkind]['private']
-    else:
-        pstr = ''
-    print('{' + mkind + '={message_type=' + opdic[mkind]['message_type'] + pstr + '}}')
-    OPdic.printdic(opdic, lead=['  '])
+    for line in fh:
+        line = line.rstrip('\n')
+        opdic = OPdic(line[10:]).opdic
+        if 'reply_to' in opdic:
+            mkind = 'reply_to'
+        else:
+            mkind = 'message_info'
+        if 'private' in opdic[mkind]:
+            pstr = '|' + 'private=' + opdic[mkind]['private']
+        else:
+            pstr = ''
+        print('{' + mkind + '={message_type=' + opdic[mkind]['message_type'] + pstr + '}}')
+        OPdic.printdic(opdic, lead=['  '])
 
-fh.close()
+    fh.close()
+
+################################################################################
+if __name__ == "__main__":
+    default()
