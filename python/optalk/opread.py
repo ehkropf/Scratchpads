@@ -25,7 +25,7 @@ class OPdic:
         opdic = {}
 
         ix += 1
-        while ix < len(istr) and not (istr[ix] == '}'):
+        while ix < self._slen_ and not (istr[ix] == '}'):
             ei = istr.find('=', ix)
             key = istr[ix:ei]
             ix = ei + 1
