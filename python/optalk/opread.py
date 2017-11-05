@@ -12,33 +12,43 @@ class OPdic:
     '''
 
     def __init__(self, input):
-        self._tstr_ = input
-        self.opdic = self.getdict()
+        self.opstr = input
+        self._slen_ = len(input)
+        self._spos_ = 0
+        self.opdic = self.makedic()
 
-    def getdict(self):
-        ''' getdict returns dictionary from OP dictionary string '''
+    def makedic(self):
+        ''' makedic constructs dictionary from OP dictionary string '''
 
+        istr = self.opstr
+        ix = self._spos_
         opdic = {}
 
-        self._tstr_ = self._tstr_[1:]
-        while len(self._tstr_) > 0 and not (self._tstr_[0] == '}'):
-            key, self._tstr_ = self._tstr_.split('=', maxsplit=1)
-            if self._tstr_[0] == '{':
-                value = self.getdict()
+        ix += 1
+        while ix < len(istr) and not (istr[ix] == '}'):
+            ei = istr.find('=', ix)
+            key = istr[ix:ei]
+            ix = ei + 1
+            if istr[ix] == '{':
+                self._spos_ = ix
+                value = self.makedic()
+                ix = self._spos_
             else:
-                rbi = self._tstr_.find('}')
-                pbi = self._tstr_.find('|')
+                rbi = istr.find('}', ix)
+                pbi = istr.find('|', ix)
                 if pbi > -1 and pbi < rbi:
-                    value, self._tstr_ = self._tstr_.split('|', maxsplit=1)
+                    value = istr[ix:pbi]
+                    ix = pbi + 1
                 else:
-                    value = self._tstr_[0:rbi]
-                    self._tstr_ = self._tstr_[rbi:]
+                    value = istr[ix:rbi]
+                    ix = rbi
             opdic[key] = value
-        if self._tstr_[0:2] == '}|':
-            self._tstr_ = self._tstr_[2:]
+        if istr[ix:ix+2] == '}|':
+            ix += 2
         else:
-            self._tstr_ = self._tstr_[1:]
+            ix += 1
 
+        self._spos_ = ix
         return opdic
 
     def print(self, lead=[]):
