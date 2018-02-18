@@ -15,13 +15,19 @@ include_directories(${ARMADILLO_INCLUDE_DIRS})
 set(CMAKE_CXX_FLAGS "-Wall -std=c++14")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
+set(MODSW_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/ModifiedSchwarz/src)
+set(MODSW_LIBRARIES ${CMAKE_SOURCE_DIR}/ModifiedSchwarz/build/libschwarz.dylib)
+
 #####################################################################
-set(SLIST buildmat.cpp)
-add_executable(asdf ${SLIST})
-target_link_libraries(asdf ${ARMADILLO_LIBRARIES})
+add_executable(bmat buildmat.cpp)
+target_link_libraries(bmat ${ARMADILLO_LIBRARIES})
+
+add_executable(eval eval.cpp)
+target_include_directories(eval PUBLIC ${MODSW_INCLUDE_DIR})
+target_link_libraries(eval ${ARMADILLO_LIBRARIES} ${MODSW_LIBRARIES})
 
 add_custom_target(run
-    COMMAND ${CMAKE_BINARY_DIR}/asdf
+    COMMAND ${CMAKE_BINARY_DIR}/eval
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    DEPENDS asdf
+    DEPENDS eval
 )
