@@ -26,8 +26,15 @@ add_executable(eval eval.cpp)
 target_include_directories(eval PUBLIC ${MODSW_INCLUDE_DIR})
 target_link_libraries(eval ${ARMADILLO_LIBRARIES} ${MODSW_LIBRARIES})
 
+add_executable(zfmm zfmm2dpart_call.cpp)
+target_link_libraries(zfmm
+    ${CMAKE_SOURCE_DIR}/libhfmm2d.a
+    /opt/local/lib/gcc7/libgfortran.dylib
+    ${ARMADILLO_LIBRARIES}
+)
+
 add_custom_target(run
-    COMMAND ${CMAKE_BINARY_DIR}/eval
+    COMMAND ${CMAKE_BINARY_DIR}/zfmm
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    DEPENDS eval
+    DEPENDS zfmm
 )
