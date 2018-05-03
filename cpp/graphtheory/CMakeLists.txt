@@ -13,7 +13,9 @@ add_library(graph SHARED graph.cpp)
 add_executable(ex1 ex1.cpp)
 target_link_libraries(ex1 graph)
 
+add_executable(ex2 ex2.cpp)
+
 add_custom_target(run
-    COMMAND ${CMAKE_BINARY_DIR}/ex1
-    DEPENDS ex1
+    COMMAND ${CMAKE_BINARY_DIR}/ex2
+    DEPENDS ex2
     )
