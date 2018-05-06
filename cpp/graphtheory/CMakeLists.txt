@@ -13,9 +13,9 @@ add_library(graph SHARED graph.cpp)
 add_executable(ex1 ex1.cpp)
 target_link_libraries(ex1 graph)
 
-add_executable(ex2 ex2.cpp)
+add_executable(libex library.cpp)
 
 add_custom_target(run
-    COMMAND cat ${CMAKE_SOURCE_DIR}/input | ${CMAKE_BINARY_DIR}/ex2
-    DEPENDS ex2
+    COMMAND cat ${CMAKE_SOURCE_DIR}/libex/input | ${CMAKE_BINARY_DIR}/libex
+    DEPENDS libex
     )
