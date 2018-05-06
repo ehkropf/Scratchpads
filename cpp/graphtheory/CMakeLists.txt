@@ -16,6 +16,6 @@ target_link_libraries(ex1 graph)
 add_executable(ex2 ex2.cpp)
 
 add_custom_target(run
-    COMMAND ${CMAKE_BINARY_DIR}/ex2
+    COMMAND cat ${CMAKE_SOURCE_DIR}/input | ${CMAKE_BINARY_DIR}/ex2
     DEPENDS ex2
     )
