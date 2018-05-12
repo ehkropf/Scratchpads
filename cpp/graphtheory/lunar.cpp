@@ -5,6 +5,7 @@
 //#define OUT(S) std::cout << S << std::endl;
 #define OUT(S)
 
+//--------------------------------------------------------------------------
 using intv = std::vector<int>;
 std::ostream& operator<<(std::ostream& os, const intv& v)
 {
@@ -12,6 +13,7 @@ std::ostream& operator<<(std::ostream& os, const intv& v)
     return os;
 }
 
+//--------------------------------------------------------------------------
 struct Node
 {
     bool visited;
@@ -22,18 +24,6 @@ struct Node
 };
 
 using Nodes = std::vector<Node>;
-
-std::ostream& operator<<(std::ostream& os, const Nodes& nv)
-{
-    os << "\n i | last" << std::endl;;
-    os <<   "---+-----" << std::endl;
-    for (const Node& n : nv)
-    {
-        os << " " << n.id << " |  " << n.last_edge << std::endl;
-    }
-
-    return os;
-}
 
 Nodes init_nodes(int size)
 {
@@ -47,6 +37,19 @@ Nodes init_nodes(int size)
     return nv;
 }
 
+std::ostream& operator<<(std::ostream& os, const Nodes& nv)
+{
+    os << "\n i | last" << std::endl;;
+    os <<   "---+-----" << std::endl;
+    for (const Node& n : nv)
+    {
+        os << " " << n.id << " |  " << n.last_edge << std::endl;
+    }
+
+    return os;
+}
+
+//--------------------------------------------------------------------------
 struct Edge
 {
     int to_node;
@@ -70,6 +73,7 @@ std::ostream& operator<<(std::ostream& os, const Edges& ev)
     return os;
 }
 
+//--------------------------------------------------------------------------
 class Graph
 {
     Nodes m_nodes;
@@ -139,6 +143,7 @@ public:
     }
 };
 
+//--------------------------------------------------------------------------
 long calculate_pairs(const intv& nc)
 {
     OUT("Components: " << nc.size());
