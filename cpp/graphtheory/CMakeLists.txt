@@ -15,7 +15,9 @@ target_link_libraries(ex1 graph)
 
 add_executable(libex library.cpp)
 
+add_executable(pairs lunar.cpp)
+
 add_custom_target(run
-    COMMAND cat ${CMAKE_SOURCE_DIR}/libex/input | ${CMAKE_BINARY_DIR}/libex
-    DEPENDS libex
+    COMMAND cat ${CMAKE_SOURCE_DIR}/pairex/input/input00.txt | ${CMAKE_BINARY_DIR}/pairs
+    DEPENDS pairs
     )
