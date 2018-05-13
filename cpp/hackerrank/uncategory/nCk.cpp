@@ -9,7 +9,7 @@ using uvvec = std::vector<uvec>;
 
 ulong binom(unsigned n, unsigned k, unsigned mod = 1e9)
 {
-    static uvec table;
+    static uvvec table;
 
     if (k > n-k) k = n - k;
     if (k == 0) return 1;

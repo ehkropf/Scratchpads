@@ -12,7 +12,11 @@ set(EXNAME pickup)
 ###########################################################################
 # Things to make.
 #
+
+add_executable(nck nCk.cpp)
+
 add_executable(${EXNAME} ${EXNAME}.cpp)
+
 add_custom_target(check
     COMMAND ${CMAKE_BINARY_DIR}/${EXNAME}
     DEPENDS ${EXNAME}
