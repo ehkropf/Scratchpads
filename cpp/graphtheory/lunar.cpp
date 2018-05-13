@@ -1,12 +1,21 @@
 #include <iostream>
 #include <queue>
 #include <vector>
+#include <cassert>
 
-//#define OUT(S) std::cout << S << std::endl;
-#define OUT(S)
+#define OUT(S) std::cout << S << std::endl;
+//#define OUT(S)
 
 //--------------------------------------------------------------------------
 using intv = std::vector<int>;
+
+int sum(const intv& nv)
+{
+    int sum = 0;
+    for (int i : nv) sum += i;
+    return sum;
+}
+
 std::ostream& operator<<(std::ostream& os, const intv& v)
 {
     for (int i : v) os << i << " ";
@@ -29,6 +38,7 @@ Nodes init_nodes(int size)
 {
     Nodes nv(size);
     int i = 0;
+    // Vector elements are guaranteed contiguous.
     for (Node& n : nv)
     {
         n.id = i++;
@@ -99,7 +109,7 @@ public:
         int ei = m_edges.size() - 1;
         Edge& e = m_edges.back();
 
-        OUT("Edge " << ei << " from " << from << " to " << to);
+        //OUT("Edge " << ei << " from " << from << " to " << to);
 
         e.to_node = to;
         e.next_edge = N[from].last_edge;
@@ -116,30 +126,44 @@ public:
         for (Node& ni : m_nodes)
         {
             int c = 0;
-            std::queue<int> q;
+            std::queue<Node*> q;
+
             if (ni.visited) continue;
-            q.push(ni.id);
+            ni.visited = true;
             ++c;
+            q.push(&ni);
+
             // bfs over each component; count entries
             while (q.size())
             {
-                OUT("Visiting " << q.front());
-                N[q.front()].visited = true;
-                for (int e = N[q.front()].last_edge; e != -1; e = E[e].next_edge)
+                for (int e = q.front()->last_edge; e != -1; e = E[e].next_edge)
                 {
-                    OUT("Along edge " << e);
+                    //OUT("Along edge " << e);
                     int n = E[e].to_node;
+                    assert(n == N[n].id);
                     if (N[n].visited) continue;
+                    N[n].visited = true;
                     ++c;
-                    q.push(n);
+                    q.push(&N[n]);
                 }
                 q.pop();
             }
-            OUT("Counted " << c);
+            //OUT("Counted " << c);
             nc.push_back(c);
         }
 
         return nc;
+    }
+
+    bool all_visited()
+    {
+        for (const Node& ni : m_nodes)
+            if (!ni.visited)
+            {
+                OUT("Missed node " << ni.id);
+                return false;
+            }
+        return true;
     }
 };
 
@@ -181,18 +205,21 @@ int main()
         G.add_edge(v, u);
     }
 
-    OUT(G.nodes());
-    OUT(G.edges());
+//    OUT(G.nodes());
+//    OUT(G.edges());
 
     // count number of partitions, with number of nodes in each
     // represent by vector of ints
     intv nc = G.connected_node_count();
     OUT("nc is " << nc);
+    OUT("nc sum is " << sum(nc));
 
 //    // calculate number of pairs
     long ans = calculate_pairs(nc);
 
-    std::cout << ans << std::endl;
+    OUT("Answer: " << ans);
+
+    OUT("All visited: " << (G.all_visited() ? "yes" : "no"));
 
     return 0;
 }
