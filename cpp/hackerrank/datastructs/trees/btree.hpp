@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <memory>
+#include <queue>
 #include <cassert>
 
 #ifndef OUT
@@ -31,6 +32,9 @@ struct Bnode
     Bnode(int d) : data(d) {}
 
     friend std::ostream& operator<<(std::ostream& os, const Bnode& n);
+
+    using PtrQueue = std::queue<Bnode::shared_ptr>;
+    using PtrRefQueue = std::queue<Bnode::shared_ptr&>;
 
 protected:
     //! Worker function for operator<<().
@@ -132,6 +136,23 @@ public:
         if (m_root->right) topRight(m_root->right, s);
 
         return s;
+    }
+
+    //! BFS level traversal (L->R) to stdout.
+    void levelTraversal() const
+    {
+        Bnode::PtrQueue q;
+        q.push(m_root);
+
+        while (q.size())
+        {
+            Bnode::shared_ptr& n = q.front();
+            if (n->left) q.push(n->left);
+            if (n->right) q.push(n->right);
+            std::cout << n->data << " ";
+            q.pop();
+        }
+        std::cout << std::endl;
     }
 
     friend std::ostream& operator<<(std::ostream&, const Btree&);

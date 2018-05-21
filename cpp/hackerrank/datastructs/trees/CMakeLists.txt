@@ -10,8 +10,10 @@ set(CMAKE_CXX_FLAGS "-Wall -std=c++14")
 
 add_executable(bttop bttop.cpp)
 
+add_executable(btbfs btbfs.cpp)
+
 add_custom_target(run
-    COMMAND cat ${CMAKE_SOURCE_DIR}/ex/top/input/input01.txt | ${CMAKE_BINARY_DIR}/bttop
-    COMMAND cat ${CMAKE_SOURCE_DIR}/ex/top/output/output01.txt
-    DEPENDS bttop
+    COMMAND cat ${CMAKE_SOURCE_DIR}/ex/bfs/input/input01.txt | ${CMAKE_BINARY_DIR}/btbfs
+    #COMMAND cat ${CMAKE_SOURCE_DIR}/ex/bfs/output/output01.txt
+    DEPENDS btbfs
     )
