@@ -14,8 +14,10 @@ add_executable(btbfs btbfs.cpp)
 
 add_executable(btswap btswap.cpp)
 
+add_executable(swapsub swapsub.cpp)
+
 add_custom_target(run
-    COMMAND cat ${CMAKE_SOURCE_DIR}/ex/swap/input/input03.txt | ${CMAKE_BINARY_DIR}/btswap
-    COMMAND cat ${CMAKE_SOURCE_DIR}/ex/swap/output/output03.txt
-    DEPENDS btswap
+    COMMAND cat ${CMAKE_SOURCE_DIR}/ex/swap/input/input00.txt | ${CMAKE_BINARY_DIR}/swapsub
+    COMMAND cat ${CMAKE_SOURCE_DIR}/ex/swap/output/output00.txt
+    DEPENDS swapsub
     )
