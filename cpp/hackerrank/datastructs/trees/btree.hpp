@@ -79,6 +79,14 @@ protected:
         return root;
     }
 
+    //! Work function for inOrder() traversal.
+    static void inOrder(const Bnode::shared_ptr& root)
+    {
+        if(root->left) inOrder(root->left);
+        std::cout << root->data << " ";
+        if(root->right) inOrder(root->right);
+    }
+
     //! Work function for preOrder() traversal.
     static void preOrder(Bnode::shared_ptr root)
     {
@@ -104,15 +112,23 @@ protected:
     //! Find node with data value in unordered btree using pre-order DFS.
     Bnode::shared_ptr unFind(int v, Bnode::shared_ptr& root)
     {
-        OUT("Find " << v << " now at " << root->data);
         if (root->data == v) return root;
 
-        Bnode::shared_ptr res;
-        if (root->left) res = unFind(v, root->left);
+        if (root->left)
+            if (Bnode::shared_ptr result = unFind(v, root->left)) return result;
+        if (root->right)
+            if (Bnode::shared_ptr result = unFind(v, root->right)) return result;
 
-        if (res->data != v && root->right) return unFind(v, root->right);
+        return nullptr;
+    }
 
-        return res;
+    //! Recursive K-swap.
+    void KSwap(int K, int level, Bnode::shared_ptr& root)
+    {
+        // Descend tree pre-order. At levels K, 2*K, 3*K, ..., swap child nodes L<->R.
+        if (level % K == 0) std::swap(root->left, root->right);
+        if (root->left) KSwap(K, level+1, root->left);
+        if (root->right) KSwap(K, level+1, root->right);
     }
 
 public:
@@ -130,10 +146,13 @@ public:
     {
         if (!m_root) m_root = Bnode::make_shared(1);
         Bnode::shared_ptr node = unFind(v, m_root);
-        assert(!(node->left || node->right));
+        assert(node && !(node->left || node->right));
         if (l > 0) node->left = Bnode::make_shared(l);
         if (r > 0) node->right = Bnode::make_shared(r);
     }
+
+    //! In-order traversal to stdout.
+    void inOrder() const { inOrder(m_root); std::cout << std::endl; }
 
     //! Send pre-order traversal to stdout.
     void preOrder() const { preOrder(m_root); std::cout << std::endl; }
@@ -166,6 +185,8 @@ public:
         std::cout << std::endl;
     }
 
+    void KSwap(int K) { KSwap(K, 1, m_root); }
+
     //! Create BST from stdin.
     static Btree bstFromCin(int N)
     {
@@ -183,12 +204,11 @@ public:
     static Btree unFromCin(int N)
     {
         Btree T;
-        int v = 0;
-        while (N--)
+        for (int v = 1; v <= N; ++v)
         {
             int l, r;
             std::cin >> l >> r;
-            T.addAt(++v, l, r);
+            T.addAt(v, l, r);
         }
 
         return T;
