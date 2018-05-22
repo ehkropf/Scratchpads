@@ -34,7 +34,7 @@ struct Bnode
     friend std::ostream& operator<<(std::ostream& os, const Bnode& n);
 
     using PtrQueue = std::queue<Bnode::shared_ptr>;
-    using PtrRefQueue = std::queue<Bnode::shared_ptr&>;
+    using RawPtrQueue = std::queue<const Bnode*>;
 
 protected:
     //! Worker function for operator<<().
@@ -60,19 +60,19 @@ class Btree
 
 protected:
     //! Recursive order insert.
-    static Bnode::shared_ptr insert(Bnode::shared_ptr root, int d)
+    static Bnode::shared_ptr bstAdd(Bnode::shared_ptr root, int d)
     {
         if (!root) return Bnode::make_shared(d);
 
         Bnode::shared_ptr cur;
         if (d <= root->data)
         {
-            cur = insert(root->left, d);
+            cur = bstAdd(root->left, d);
             root->left = cur;
         }
         else
         {
-            cur = insert(root->right, d);
+            cur = bstAdd(root->right, d);
             root->right = cur;
         }
 
@@ -101,27 +101,38 @@ protected:
         if(n->right) topRight(n->right, s);
     }
 
-public:
-    //! Create from stdin.
-    static Btree from_cin(int N)
+    //! Find node with data value in unordered btree using pre-order DFS.
+    Bnode::shared_ptr unFind(int v, Bnode::shared_ptr& root)
     {
-        Btree T;
-        while (N--)
-        {
-            int d;
-            std::cin >> d;
-            T.insert(d);
-        }
-        return T;
+        OUT("Find " << v << " now at " << root->data);
+        if (root->data == v) return root;
+
+        Bnode::shared_ptr res;
+        if (root->left) res = unFind(v, root->left);
+
+        if (res->data != v && root->right) return unFind(v, root->right);
+
+        return res;
     }
 
+public:
     //! Ordered tree insert.
-    void insert(int d)
+    void bstAdd(int d)
     {
         if (!m_root)
             m_root = Bnode::make_shared(d);
         else
-            insert(m_root, d);
+            bstAdd(m_root, d);
+    }
+
+    //! Unordered tree insert.
+    void addAt(int v, int l, int r)
+    {
+        if (!m_root) m_root = Bnode::make_shared(1);
+        Bnode::shared_ptr node = unFind(v, m_root);
+        assert(!(node->left || node->right));
+        if (l > 0) node->left = Bnode::make_shared(l);
+        if (r > 0) node->right = Bnode::make_shared(r);
     }
 
     //! Send pre-order traversal to stdout.
@@ -141,18 +152,46 @@ public:
     //! BFS level traversal (L->R) to stdout.
     void levelTraversal() const
     {
-        Bnode::PtrQueue q;
-        q.push(m_root);
+        Bnode::RawPtrQueue q;
+        q.push(m_root.get());
 
         while (q.size())
         {
-            Bnode::shared_ptr& n = q.front();
-            if (n->left) q.push(n->left);
-            if (n->right) q.push(n->right);
+            const Bnode* n = q.front();
+            if (n->left) q.push(n->left.get());
+            if (n->right) q.push(n->right.get());
             std::cout << n->data << " ";
             q.pop();
         }
         std::cout << std::endl;
+    }
+
+    //! Create BST from stdin.
+    static Btree bstFromCin(int N)
+    {
+        Btree T;
+        while (N--)
+        {
+            int d;
+            std::cin >> d;
+            T.bstAdd(d);
+        }
+        return T;
+    }
+
+    //! Create unordered btree from stdin.
+    static Btree unFromCin(int N)
+    {
+        Btree T;
+        int v = 0;
+        while (N--)
+        {
+            int l, r;
+            std::cin >> l >> r;
+            T.addAt(++v, l, r);
+        }
+
+        return T;
     }
 
     friend std::ostream& operator<<(std::ostream&, const Btree&);
