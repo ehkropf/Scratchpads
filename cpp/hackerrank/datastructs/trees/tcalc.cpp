@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <memory>
 #include <cassert>
@@ -43,6 +44,7 @@ public:
     void addAt(int k, int n)
     {
         if (!m_root) m_root = Node::make_shared(1);
+        //OUT("Add " << k << " at " << n);
         Node::shared_ptr at = find(n);
         assert(at != nullptr);
         at->nodes.push_back(Node::make_shared(k));
@@ -88,20 +90,37 @@ public:
     }
 
     //! Distance between two nodes.
-    int dist(int v1, int v2) const
+    int dist(int v1, int v2, int level = 1, Node* root = nullptr) const
+    {
+        if (!root) root = m_root.get();
+        if (root->key == v1 || root->key == v2) return level;
+
+        int low = 0;
+        for (auto& n : root->nodes)
+        {
+            int tmp = dist(v1, v2, level+1, n.get());
+            if (low && tmp) return (low + tmp - 2*level);
+            if (tmp) low = tmp;
+        }
+        return low;
+    }
+
+    //! Distance between two nodes.
+    int distx(int v1, int v2) const
     {
         Node::shared_ptr n = lca(v1, v2);
         return depth(v1, n) + depth(v2, n);
     }
 
-    //! Create tree from std::cin.
-    static Tree fromCin(int n)
+    //! Create tree from istream.
+    static Tree fromStream(std::istream& fin, int n)
     {
         Tree T;
         while (--n)
         {
             int v, k;
-            std::cin >> v >> k;
+            fin >> v >> k;
+            if (k < v) std::swap(k, v);
             T.addAt(k, v);
         }
         return T;
@@ -127,29 +146,31 @@ std::ostream& operator<<(std::ostream& os, intv& v)
 }
 
 //--------------------------------------------------------------------------
-int main()
+int main(int, char** argv)
 {
-    int n, q;
-    std::cin >> n >> q;
-    Tree T = Tree::fromCin(n);
+    std::ifstream fin(argv[1]);
 
-    OUT(T);
+    int n, q;
+    fin >> n >> q;
+    Tree T = Tree::fromStream(fin, n);
+
+    //OUT(T);
 
     for (int i = 0; i < q; ++i)
     {
         int k;
-        std::cin >> k;
+        fin >> k;
         //OUT("Use k=" << k << " values for pairs");
         intv pv;
         for (int j = 0; j < k; ++j)
         {
             int p;
-            std::cin >> p;
+            fin >> p;
             pv.push_back(p);
         }
         //OUT("values: " << pv);
 
-        int ans = 0;
+        long ans = 0, ansx = 0;
         if (pv.size())
         {
             intv::const_iterator pi = pv.begin(), end = pv.end();
@@ -164,15 +185,18 @@ int main()
                     int s = T.dist(v1, v2);
                     //OUT("Dist: " << T.dist(v1, v2));
 
+                    ansx += v1*v2*T.distx(v1, v2);
                     ans += v1*v2*s;
                 }
                 ++pi;
             }
-            ans %= int(1e9 + 7);
+            ans %= long(1e9 + 7);
 
-            std::cout << ans << std::endl;
+            std::cout << "ok: " << ans << " -- new: " << ans << std::endl;
         }
     }
+
+    fin.close();
 
     return 0;
 }

@@ -18,9 +18,9 @@ add_executable(swapsub swapsub.cpp)
 
 add_executable(tcalc tcalc.cpp)
 
-add_custom_target(run cat ${CMAKE_SOURCE_DIR}/ex/kitty/input/input00.txt | ${CMAKE_BINARY_DIR}/tcalc
+add_custom_target(run ${CMAKE_BINARY_DIR}/tcalc ${CMAKE_SOURCE_DIR}/ex/kitty/input/input01.txt
     COMMAND echo '-----'
-    COMMAND cat ${CMAKE_SOURCE_DIR}/ex/kitty/output/output00.txt
+    COMMAND cat ${CMAKE_SOURCE_DIR}/ex/kitty/output/output01.txt
     COMMAND echo
     DEPENDS tcalc
     )
