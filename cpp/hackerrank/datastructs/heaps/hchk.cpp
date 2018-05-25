@@ -2,6 +2,7 @@
 #include <fstream>
 #include <deque>
 #include <iomanip>
+#include <string>
 
 #define OUT(S) std::cout << S << std::endl;
 
@@ -108,8 +109,17 @@ protected:
         int l = left(i);
         int r = right(i);
 
-        if (l < n && arr[l] < arr[imin]) imin = l;
-        if (r < n && arr[r] < arr[imin]) imin = r;
+        OUT("heapify at " << i << ":");
+        if (l < n && arr[l] < arr[imin])
+        {
+            OUT("  at l < at imin");
+            imin = l;
+        }
+        if (r < n && arr[r] < arr[imin])
+        {
+            OUT("  at r < at imin");
+            imin = r;
+        }
         if (imin != i)
         {
             std::swap(arr[i], arr[imin]);
@@ -139,6 +149,15 @@ protected:
                 _heap_check(r);
         }
         return true;
+    }
+
+public:
+    static MinHeap given_array(const intv& v)
+    {
+        MinHeap h;
+        intv&  arr= h.get_arr();
+        arr = v;
+        return h;
     }
 };
 
@@ -198,6 +217,15 @@ protected:
         }
         return true;
     }
+
+public:
+    static MaxHeap given_array(const intv& v)
+    {
+        MaxHeap h;
+        intv& arr= h.get_arr();
+        arr = v;
+        return h;
+    }
 };
 
 //--------------------------------------------------------------------------
@@ -246,23 +274,33 @@ std::ostream& operator<<(std::ostream& os, Problem& P)
 }
 
 //--------------------------------------------------------------------------
-int main(int, char** argv)
+int main()
 {
-    std::ifstream ins(argv[1]);
-
-    int n;
-    ins >> n;
-
-    Problem P;
-    while (n--)
+    auto hout = [](std::string label, Heap* h)
     {
-        int v;
-        ins >> v;
+        auto tf = [](bool v) -> char { return v ? '/' : 'X'; };
+        OUT("  " << label << " (" << tf(h->heap_check()) << ")("
+                << h->size() << ") -- " << *h);
+    };
 
-        P.add(v);
-        std::cout << std::setprecision(1) << std::fixed << P.mean() << std::endl;
-    }
+    int add = 78775;
+    intv minh_in{ 47620, 71415, 51310, 56623, 48240, 69067, 59597, 57256, 60326, 57064, 90403, 74518, 51299, 53125, 70521, 63131, 55461, 60757, 60445, 73634, 71859, 67599, 94063, 77519, 58281, 68921, 83478, 73952, 81530, 53649, 69230, 63772, 71057, 74030, 67294, 61382, 62995, 74879, 78563, 94807, 75425, 98296, 92661, 87127, 98074, 89952, 71709, 98041, 77196, 83312, 78164, 96066, 95912, 93793, 92211, 88179, 89659, 86940, 93644, 86287, 97446, 92041, 91127, 93624, 74725, 76966, 94455, 85116, 96402, 81638, 88540, 98764, 77763, 88830, 55170, 70076, 82531 };
+    intv maxh_in{ 47560, 47005, 46981, 42707, 40776, 28659, 38816, 45843, 45484, 35597, 44001, 45170, 26019, 26464, 31306, 39001, 41510, 17073, 43245, 15897, 19486, 24394, 16843, 30118, 40447, 31718, 13751, 30050, 22986, 23833, 23759, 36827, 17502, 15237, 22120, 37105, 16598, 20535, 21499, 22934, 10914, 1013, 6823, 13837, 35032, 10945, 13401, 13449, 31598, 1817, 12766, 22016, 31450, 30409, 148, 2973, 1481, 4738, 5799, 11113, 1711, 10115, 20555, 13343, 17368, 18784, 29941, 7920, 7084, 3033, 2698, 16571, 19709, 22462, 5415, 17738 };
 
-    ins.close();
+    MinHeap nh = MinHeap::given_array(minh_in);
+    MaxHeap xh = MaxHeap::given_array(maxh_in);
+
+    OUT("\nAdd " << add);
+    nh.insert(add);
+    hout("minheap", &nh);
+
+    OUT("\nRemove " << nh.root());
+    int remove = nh.pop();
+    hout("minheap", &nh);
+
+    OUT("\nAdd " << remove);
+    xh.insert(remove);
+    hout("maxheap", &xh);
+
     return 0;
 }

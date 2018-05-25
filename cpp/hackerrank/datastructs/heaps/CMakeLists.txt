@@ -10,6 +10,12 @@ set(CMAKE_CXX_FLAGS "-Wall -std=c++14")
 
 add_executable(hmed hmed.cpp)
 
+add_executable(hchk hchk.cpp)
+
 add_custom_target(run ${CMAKE_BINARY_DIR}/hmed ${CMAKE_SOURCE_DIR}/ex/hmed/input/input01.txt
     DEPENDS hmed
+    )
+
+add_custom_target(chk hchk
+    DEPENDS hchk
     )
