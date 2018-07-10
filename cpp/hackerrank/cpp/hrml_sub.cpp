@@ -7,12 +7,6 @@
 //------------------------------------------------------------------------------
 #define OUT(S) std::cout << S << std::endl
 
-#ifdef DEBUG
-#define DOUT(S) std::cout << "DEBUG: " << S << std::endl
-#else
-#define DOUT(S)
-#endif
-
 //------------------------------------------------------------------------------
 std::string get_token(std::string& str, const std::string& delim)
 {
@@ -26,8 +20,6 @@ std::string get_token(std::string& str, const std::string& delim)
 
     return token;
 }
-
-std::string get_token(std::stringstream& ss, char delim);
 
 //------------------------------------------------------------------------------
 
@@ -59,41 +51,7 @@ public:
     {
         m_subtags[tag.name()] = tag;
     }
-
-    std::string to_str(std::string prefix = "") const
-    {
-        std::ostringstream ostr(prefix);
-        ostr << "\n" << prefix << "<" << m_name;
-        for (auto& a : m_attributes)
-        {
-            ostr << " " << a.first << " = \"" << a.second << "\"";
-        }
-        ostr << ">";
-        for (auto& t : m_subtags)
-        {
-            ostr << t.second.to_str(prefix + "  ");
-        }
-        ostr << "\n" << prefix << "</" << m_name << ">";
-        return ostr.str();
-    }
-
-    friend std::ostream& operator<<(std::iostream&, const Tag&);
 };
-
-std::ostream& operator<<(std::ostream& os, const Tag& tag)
-{
-    os << tag.to_str();
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const Tag::Tags& tags)
-{
-    for (auto& t : tags)
-    {
-        os << t.second;
-    }
-    return os;
-}
 
 //------------------------------------------------------------------------------
 class HRML
@@ -103,16 +61,12 @@ class HRML
 private:
     void set_tags(std::istream& in, int& N, Tag* p_open_tag = nullptr)
     {
-        DOUT("set_tags with open_tag=" << (p_open_tag ? p_open_tag->name() : "<empty>"));
-
         while (N-- > 0)
         {
             std::string line(getline(in));
-            // DOUT("input: " << line);
 
             if (line.substr(0, 2) == "</")
             {
-                DOUT("closing: " << line);
                 return;
             }
 
@@ -137,7 +91,6 @@ private:
                         line.clear();
                     }
 
-                    DOUT("attribute {" << tok << "=" << value << "}");
                     tag.add_attribute(tok, value.substr(1, value.size() - 2));
                 }
             }
@@ -149,13 +102,11 @@ private:
 
             if (p_open_tag)
             {
-                DOUT("Tag(" << tag.name() << ") is subtag of Tag(" << p_open_tag->name() << ")");
                 set_tags(in, N, &tag);
                 p_open_tag->add_subtag(tag);
             }
             else
             {
-                DOUT("top level Tag(" << tag.name() << ")");
                 set_tags(in, N, &tag);
                 m_tags[tag.name()] = tag;
             }
@@ -208,14 +159,13 @@ private:
             }
         }
 
-        return "Not found!";
+        return "Not Found!";
     }
 
 public:
     HRML(std::istream& in, int N)
     {
         set_tags(in, N);
-        DOUT("Tags: {" << m_tags << "\n}");
     }
 
     std::string run_query(std::istream& in) const
