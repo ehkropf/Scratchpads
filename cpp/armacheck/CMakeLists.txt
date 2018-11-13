@@ -9,7 +9,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS true)
 
 find_package(Armadillo REQUIRED)
 include_directories(${ARMADILLO_INCLUDE_DIRS})
-set(CMAKE_CXX_FLAGS "-Wall")
+set(CMAKE_CXX_FLAGS "-Wall -std=c++14")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 
 add_executable(example example.cpp)
@@ -20,3 +20,6 @@ target_link_libraries(example1 ${ARMADILLO_LIBRARIES})
 
 add_executable(order order.cpp)
 target_link_libraries(order ${ARMADILLO_LIBRARIES})
+
+add_executable(fftchk fftcheck.cpp)
+target_link_libraries(fftchk ${ARMADILLO_LIBRARIES})
