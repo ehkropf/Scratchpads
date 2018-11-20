@@ -13,7 +13,8 @@ template <typename ArmaCxMat>
 ArmaCxMat testFun(const ArmaCxMat& zv)
 {
     const arma::cx_vec dv{
-        arma::cx_double(-0.2517, 0.3129), arma::cx_double(0.2307, -0.4667) };
+        arma::cx_double{-0.2517, 0.3129}, arma::cx_double{0.2307, -0.4667}
+    };
     ArmaCxMat wv(zv.size(), arma::fill::zeros);
     for (const auto& d : dv) wv += 1/(zv - d);
 
