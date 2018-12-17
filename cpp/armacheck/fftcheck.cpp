@@ -14,7 +14,7 @@ ArmaCxMat testFun(const ArmaCxMat& zv)
 {
     const arma::cx_vec dv{
         arma::cx_double(-0.2517, 0.3129), arma::cx_double(0.2307, -0.4667) };
-    ArmaCxMat wv(zv.size(), arma::fill::zeros);
+    ArmaCxMat wv = zv; // wv(zv.size(), arma::fill::zeros);
     for (const auto& d : dv) wv += 1/(zv - d);
 
     return wv;
@@ -88,7 +88,7 @@ void coeffOut(const arma::cx_vec& c)
 int main()
 {
     // From the unit circle, take the N-point DFT of a given function.
-    unsigned N = 256;
+    unsigned N = 128;
     arma::cx_vec unit_pts(arma::exp((arma::regspace(0, N-1)/N)*i2pi));
     arma::cx_vec w_pts(testFun(unit_pts));
     arma::cx_vec c(arma::fft(w_pts)/N);
