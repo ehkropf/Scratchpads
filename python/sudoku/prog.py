@@ -17,6 +17,7 @@ def separatorRow():
     return '-------+-------+-------'
 
 #===============================================================================
+# Control Sequence Indicator
 CSI = '\033['
 
 class Placer:
