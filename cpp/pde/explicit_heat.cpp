@@ -1,250 +1,166 @@
 #include <iostream>
 #include <fstream>
-#include <iomanip>
-#include <cmath>
 #include <vector>
-#include <sstream>
+#include <memory>
+#include <strstream>
 
-//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+using std::size_t;
+
+//------------------------------------------------------------------------------
 /*
- * Some output stuff.
+ * I/O stuff
  */
 #define STDOUT(S) std::cout << S
 
-//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//------------------------------------------------------------------------------
 /*
- */
-
-class SFormat
-{
-    static std::stringstream _buffer;
-    static bool _used;
-
-    void reset()
-    {
-        if (_used) _buffer.seekp(std::ios::beg);
-        _used = true;
-    }
-
-public:
-    /*
-     * Conversion happens on construction.
-     */
-    template <class T>
-    SFormat(const T& v)
-    {
-        reset();
-        _buffer << v;
-    }
-
-    operator std::string() const { return _buffer.str().c_str(); }
-};
-
-std::stringstream SFormat::_buffer;
-bool SFormat::_used = false;
-
-class CSVline
-{
-    std::vector<std::string> _v;
-
-public:
-    CSVline() {}
-    CSVline(const size_t n) : _v(n) {}
-
-    const std::vector<std::string> vector() const { return _v; }
-
-    std::string& operator[](size_t pos) { return _v[pos]; }
-    const std::string& operator[](size_t pos) const { return _v[pos]; }
-
-    std::string& back() { return _v.back(); }
-    const std::string& back() const { return _v.back(); }
-};
-
-class CSVwriter
-{
-    std::unique_ptr<std::fstream> _pf;
-
-    void check_open()
-    {
-        if (!_pf->is_open())
-        {
-            STDOUT("Failed to open CSV.\n");
-        }
-    }
-
-public:
-    /*
-     * Vector type for writing.
-     */
-    using CSVvector = std::vector<std::string>;
-
-    /*
-     * Open with filename.
-     */
-    CSVwriter(const char* fname) : _pf(std::make_unique<std::fstream>(fname, std::ios::out))
-    {
-        check_open();
-    }
-    CSVwriter(const std::string& fname) : _pf(std::make_unique<std::fstream>(fname, std::ios::out))
-    {
-        check_open();
-    }
-
-    /*
-     * Write vector of strings to line.
-     */
-    void writeLine(const CSVline& line)
-    {
-        const CSVvector& v = line.vector();
-        *_pf << v[0];
-        for (unsigned i = 1; i < v.size(); ++i)
-        {
-            *_pf << "," << v[i];
-        }
-        *_pf << "\n";
-    }
-};
-
-//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-/*
- * 2d equispaced grid.
+ * 2d grid class.
+ *
+ * Grid doesn't care about scale, only number of points in each dimension.
+ * x-points are indexed by j, and t-points indexed by n.
+ *
  */
 template <class T>
 class Grid2d
 {
-    T _xmin, _xmax, _dx;
-    T _tmin, _tmax, _dt;
-
-    unsigned _nx;
-    unsigned _nt;
-    std::vector<T> _xpts;
-    std::vector<T> _tpts;
-    std::vector<T> _grid_array;
+    std::vector<T> _v;
+    size_t _nt, _nx;
 
 public:
-    /*
-     * Constructor requires x and t min/max, along with delta_x and delta_t.
-     */
-    Grid2d(T xmin, T xmax, T dx, T tmin, T tmax, T dt)
-        : _xmin(xmin),
-          _xmax(xmax),
-          _dx(dx),
-          _tmin(tmin),
-          _tmax(tmax),
-          _dt(dt)
-    {
-        _nx = std::trunc((xmax - xmin)/dx);
-        _nt = std::trunc((tmax - tmin)/dt);
-        _grid_array.resize(_nx*_nt);
-    }
+    using iterator = typename std::vector<T>::iterator;
+    using const_iterator = typename std::vector<T>::const_iterator;
 
-    /*
-     * Access by (j,n) where 0 <= j <= nx and 0 <= n <= nt.
-     */
-    T& operator()(unsigned j, unsigned n)
-    {
-        return _grid_array[n*_nt + j];
-    }
-    const T& operator()(unsigned j, unsigned n) const
-    {
-        return _grid_array[n*_nt + j];
-    }
+    Grid2d(size_t nx, size_t nt) : _v(nx*nt), _nt(nt), _nx(nx) {}
 
-    unsigned x_size() const { return _nx; }
-    unsigned t_size() const { return _nt; }
+    T& operator()(size_t j, size_t n) { return _v[_nx*n + j]; }
+    const T& operator()(size_t j, size_t n) const { return _v[_nx*n + j]; }
 
-    T x_val(unsigned j) const
+    iterator xbegin(size_t n) { return _v.begin() + _nx*n; }
+    iterator xend(size_t n) { return xbegin(n) + _nx; }
+    const_iterator xbegin(size_t n) const { return _v.begin() + _nx*n; }
+    const_iterator xend(size_t n) const { return xbegin(n) + _nx; }
+
+    friend std::ostream& operator<<(std::ostream& os, const Grid2d<T>& grid)
     {
-        if (j == 0) return _xmin;
-        else if (j == _nx) return _xmax;
-        else return j*_dx;
-    }
-    T t_val(unsigned n) const
-    {
-        if (n == 0) return _tmin;
-        else if (n == _nt) return _tmax;
-        else return n*_dt;
+        size_t j = 0;
+        for (auto it = grid._v.begin(); it != grid._v.end(); ++it)
+        {
+            if (j == 0) STDOUT(*it);
+            else STDOUT(", " << *it);
+            ++j;
+            if (j == grid._nx)
+            {
+                j = 0;
+                STDOUT("\n");
+            }
+        }
+
+        return os;
     }
 };
 
-
-//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//------------------------------------------------------------------------------
 /*
- * Hat function on [0,1].
+ * CSV writer
+ */
+class CSVwriter
+{
+    std::ofstream _f;
+
+    std::ostrstream _os;
+    bool _newline{true};
+
+public:
+    CSVwriter(const char* fname) { _f.open(fname); }
+    CSVwriter(const std::string& fname) { _f.open(fname); }
+
+    template <class T>
+    void add_entry(const T& e)
+    {
+        if (!_newline)
+        {
+            _os << ",";
+        }
+        else
+        {
+            _newline = false;
+        }
+        _os << e;
+    }
+
+    void write_line()
+    {
+        _f << _os.str() << "\n";
+        _os.seekp(std::ios::beg);
+        _newline = true;
+    }
+};
+
+//------------------------------------------------------------------------------
+/*
+ * Test hat function
  */
 double hatfun(double x)
 {
-    if (x <= 0.5)
+    if (x < 0.5)
     {
         return 0.5*x;
     }
     return -0.5*x + 0.5;
 }
 
-//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-int main(int argc, char** argv)
+//------------------------------------------------------------------------------
+int main()
 {
-    /*
-     * 1d heat equation explicit method.
-     *
-     * Desired: One run of explicit solver given $\delta x$ $\delta t$. Output
-     * each step to file; each line is time step. Output file is CSV.
-     *
-     * Dreaming: Take function definition from external source.
-     */
+    std::string ofname{"out.csv"};
+    size_t nx{101}, nt{10001};
+    double dT = 0.5;
 
-    if (argc < 3)
-    {
-        STDOUT("Missing arguments");
-        return -1;
-    }
-
-    double dx{std::stod(argv[1])};
-    double dt{std::stod(argv[2])};
-    STDOUT("dx = " << dx << "; dt = " << dt << "\n");
-
-    Grid2d<double> grid{0., 1., dx, 0., 1., dt};
-    unsigned nx = grid.x_size();
-    unsigned nt = grid.t_size();
-    STDOUT("nx = " << nx << "; nt = " << nt << "\n");
-
-    CSVwriter csv{"out.csv"};
-    CSVline line{nx+1};
-
-    // Set initial/boundary values here.
-    line[0] = SFormat(grid.t_val(0));
-    line[1] = line[0];
-    line.back() = line[0];
-    for (unsigned j = 1; j < nx-1; ++j)
-    {
-        double fv = hatfun(grid.x_val(j));
-        grid(j,0) = fv;
-        line[j+1] = SFormat(fv);
-    }
-    csv.writeLine(line);
-
-    // mu = dt/dx^2 <= 1/2?
-    double mu{dt/(dx*dx)};
+    double dx = 1.0/double(nx-1);
+    double dt = dT/double(nt-1);
+    STDOUT("dx = " << dx << ", dt = " << dt << "\n");
+    double mu = dt/(dx*dx);
     STDOUT("mu = " << mu << "\n");
 
-    // Explicit method.
-    auto Unext = [mu](Grid2d<double>& U, unsigned j, unsigned n)
+    auto ex_step = [mu](const Grid2d<double>& U, size_t j, size_t n)
     {
-        return U(j,n) + mu*(U(j-1, n) - 2.0*U(j,n) + U(j+1,n));
+        return U(j,n-1) + mu*(U(j-1,n-1) - 2*U(j,n-1) + U(j+1,n-1));
     };
 
-    line[1] = SFormat(0.0);
-    line[nx] = SFormat(0.0);
-    for (unsigned n = 1; n < nt; ++n)
+    Grid2d<double> grid(nx, nt);
+    CSVwriter csv{ofname};
+
+    // Initialize
+    csv.add_entry("0,0");
+    Grid2d<double>::iterator it = grid.xbegin(0);
+    *it++ = 0.0;
+    size_t j = 1;
+    for (; it != grid.xend(0)-1; ++it)
     {
-        line[0] = SFormat(grid.t_val(n));
-        for (unsigned j = 1; j < nx-1; ++j)
+        *it = hatfun(j++/double(nx-1));
+        csv.add_entry(*it);
+    }
+    *it = 0.0;
+    csv.add_entry(0.0);
+    csv.write_line();
+    STDOUT("Initialized\n");
+
+    // Solve over 1 sec.
+    for (size_t n = 1; n < nt; ++n)
+    {
+        it = grid.xbegin(n);
+        *it++ = 0.0;
+        csv.add_entry(dT*(n/double(nt-1)));
+        csv.add_entry(0.0);
+        size_t j = 1;
+        for (; it != grid.xend(n) - 1; ++it)
         {
-            double uval = Unext(grid, j, n-1);
-            grid(j,n) = uval;
-            line[j+1] = SFormat(uval);
+            *it = ex_step(grid, j++, n);
+            csv.add_entry(*it);
         }
-        csv.writeLine(line);
+        *it = 0.0;
+        csv.add_entry(0.0);
+        csv.write_line();
     }
 
     return 0;
