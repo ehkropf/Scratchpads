@@ -1,10 +1,15 @@
 #pragma once
 
 #include <string>
+#include <cerrno>
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/select.h>
 #include <netdb.h>
+
+constexpr const long default_timeout_seconds{2};
 
 //////////////////////////////////////////////////////////////////////////////////
 //! AddInfo: wraps usage for getaddrinfo() and the addrinfo structure.
@@ -50,14 +55,11 @@ protected:
     {
         AddrHint()
         {
-            m_hint.ai_family = PF_INET;
+            memset(&m_hint, 0, sizeof m_hint);
+            m_hint.ai_family = AF_INET;
             m_hint.ai_socktype = SOCK_STREAM;
             m_hint.ai_protocol = IPPROTO_TCP;
             m_hint.ai_flags = AI_ADDRCONFIG | AI_NUMERICSERV;
-            m_hint.ai_addrlen = 0;
-            m_hint.ai_addr = nullptr;
-            m_hint.ai_canonname = nullptr;
-            m_hint.ai_next = nullptr;
         }
 
         const addrinfo* GetHint() const { return &m_hint; }
@@ -104,11 +106,25 @@ bool AddrInfo::CheckRemote()
             cause = "failed to get socket";
             continue;
         }
+        fd_set set;
+        FD_ZERO(&set);
+        FD_SET(sock, &set);
+
+        if (fcntl(sock, F_SETFL, fcntl(sock, F_GETFL) | O_NONBLOCK) < 0)
+        {
+            cause = "unable to set socket to non-blocking";
+            continue;
+        }
+        
         if (connect(sock, addr_ptr->ai_addr, addr_ptr->ai_addrlen) < 0)
         {
-            cause = "connect failed";
-            close(sock);
-            continue;
+            timeval timeout{default_timeout_seconds, 0};
+            if (errno != EINPROGRESS or select(sock+1, nullptr, &set, nullptr, &timeout) <= 0)
+            {
+                cause = "connect failed";
+                close(sock);
+                continue;
+            }
         }
 
         // Got a connection.
