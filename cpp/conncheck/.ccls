@@ -1,0 +1,8 @@
+clang++
+-Wall
+-Wextra
+-std=c++17
+-isysroot/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk
+-isystem/Library/Developer/CommandLineTools/usr/bin/../include/c++/v1
+%h -x
+%h c++-header
